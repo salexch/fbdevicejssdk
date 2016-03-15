@@ -214,11 +214,11 @@
 	                            switch (error_message) {
 	                                case 'authorization_declined':
 	                                    clearInterval(poll_timer);
-	                                    dfd.reject();
+	                                    dfd.reject(error_message);
 	                                    break;
 	                                case 'code_expired':
 	                                    clearInterval(poll_timer);
-	                                    dfd.reject();
+	                                    dfd.reject(error_message);
 	                                    break;
 	                            }
 	                    }
@@ -294,7 +294,11 @@
 	                        }
 	                    });
 	
-	                    return pollUserLogin(app_id, res.code, res.interval);
+	                    return pollUserLogin(app_id, res.code, res.interval).fail(function(message) {
+	                        cb({
+	                            status: message == 'authorization_declined' ? 'not_authorized' : 'unknown'
+	                        });
+	                    });
 	                }).then(function(res) {
 	                    access_token = res.access_token;
 	                    expires_in = res.expires_in;
