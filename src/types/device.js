@@ -163,13 +163,13 @@
 
 
         function storeAccessToken(access_token) {
-            var storage_key = btoa(sdk_key + api_key);
+            var storage_key = btoa(sdk_key + app_id);
 
             localStorage.setItem(storage_key, access_token);
         }
 
         function getStoredAccessToken() {
-            var storage_key = btoa(sdk_key + api_key);
+            var storage_key = btoa(sdk_key + app_id);
 
             return localStorage.getItem(storage_key);
         }
