@@ -5,6 +5,17 @@
     <title></title>
 </head>
 <body>
+    <script>
+        fbAsyncInit = function() {
+            FB.init({
+                appId: '885680901553618'
+            });
 
+            FB.login(function(res) {
+                console.log('Demo login res:', res);
+            });
+        }
+    </script>
+    <script src="../dist/fbdevice.js"></script>
 </body>
 </html>

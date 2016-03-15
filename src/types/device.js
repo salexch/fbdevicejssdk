@@ -26,7 +26,7 @@
                     + '&client_id=<%=APP_ID %>'
                     + '&scope=<%=scope.join(\',\') %>'),
                 POLL: _.template(
-                    'type=device_code'
+                    'type=device_token'
                     + '&client_id=<%=APP_ID %>'
                     + '&code=<%=code %>'),
                 GRAPH: {
@@ -85,8 +85,11 @@
 
             $http.post(fb_api.DEVICE + params, null, {responseType : 'json'}).then(function(res) {
                 console.log('showLoginCode', res);
-                if (res.status == 200 && 'object' == typeof res.data) //TODO check fields
-                    dfd.resolve(res.data);
+                var response_body = res.response || '',
+                    response_status = ~~(res.status || -1);
+
+                if (response_status == 200 && 'object' == typeof response_body) //TODO check fields
+                    dfd.resolve(response_body);
                 else
                     dfd.reject('no data');
             }).catch(dfd.reject);
@@ -111,15 +114,18 @@
 
                 $http.post(poll_url, null, {responseType : 'json'}).then(function(res) {
                     console.log('showLoginCode', res);
-                    if (res.status == 200) {
+                    var response_body = res.response || '',
+                        response_status = ~~(res.status || -1);
+
+                    if (response_status == 200) {
                         clearInterval(poll_timer);
-                        dfd.resolve(res.data);
-                    } else if (res.status == 400) {
+                        dfd.resolve(response_body);
+                    } else if (response_status == 400) {
                         var error_type,
                             error_message;
                         try {
-                            error_type = res.data.error.type;
-                            error_message = res.data.error.message;
+                            error_type = response_body.error.type;
+                            error_message = response_body.error.message;
                         } catch (e) {}
 
                         if (error_type == 'OAuthException')
@@ -146,7 +152,11 @@
             });
 
 
-            return $http.post(fb_api.GRAPH + params, null, {responseType : 'json'});
+            return $http.post(fb_api.GRAPH + params, null, {responseType : 'json'}).then(function(res) {
+                var response_body = res.response || '';
+
+                return Q(response_body);
+            });
         }
 
 
