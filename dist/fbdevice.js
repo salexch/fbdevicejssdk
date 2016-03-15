@@ -47,12 +47,33 @@
 	/**
 	 * Created by alex on 3/11/2016.
 	 */
-	var FB = __webpack_require__(1);
+	/*;(function() {
 	
-	//only for device2.js
-	window.FB = FB;
+	    var sdk = {
+	        device: require('./types/device.js'),
+	        web: require('./types/web.js')
+	    };
+	
+	    function autoDetect() {
+	        return 'web';
+	    }
+	
+	    window.FB = {
+	        init: function(options) {
+	            if (options.sdk_type && options.sdk_type in sdk)
+	                sdk = sdk[options.sdk_type];
+	            else
+	                sdk = sdk[autoDetect()];
+	
+	            window.FB = sdk;
+	            window.FB.init(options);
+	        }
+	    };
+	    window.fbAsyncInit();
+	})();*/
+	
+	window.FB = __webpack_require__(1);
 	window.fbAsyncInit();
-
 
 /***/ },
 /* 1 */
@@ -288,9 +309,6 @@
 	    })();
 	
 	    module.exports = FB;
-	
-	/*    window.FB = FB;
-	    window.fbAsyncInit();*/
 	})();
 
 

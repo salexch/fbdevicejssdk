@@ -184,16 +184,17 @@
             init: function(obj) {
                 app_id = obj.appId;
             },
-            login: function(cb, _scope) {
-                scope = _.compact((_scope || '').split(','));
+            login: function(cb, options) {
+                options = options || {};
+                scope = _.compact((options.scope || '').split(','));
 
-                getLoginCode().then(function(res) {
+                getLoginCode(app_id, scope).then(function(res) {
                     cb({
                         status: 'waiting',
                         user_code: res.user_code
                     });
 
-                    pollUserLogin(api_key, res.code, res.interval).then(function(res) {
+                    pollUserLogin(app_id, res.code, res.interval).then(function(res) {
                         storeAccessToken(res.access_token);
                         cb(res);
                     });
@@ -227,7 +228,4 @@
     })();
 
     module.exports = FB;
-
-    window.FB = FB;
-    window.fbAsyncInit();
 })();

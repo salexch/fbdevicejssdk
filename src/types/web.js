@@ -19,5 +19,10 @@
 
     };
 
-    module.exports = FB;
+    window.fbAsyncInit = function() {
+
+    };
+
+
+    module.exports = {};
 })();
