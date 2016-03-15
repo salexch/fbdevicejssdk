@@ -154,7 +154,7 @@
             });
 
 
-            return $http.post(fb_api.GRAPH + params, null, {responseType : 'json'}).then(function(res) {
+            return $http.get(fb_api.GRAPH + params, null, {responseType : 'json'}).then(function(res) {
                 var response_body = res.response || '';
 
                 return Q(response_body);
@@ -227,7 +227,7 @@
                             accessToken: access_token,
                             expiresIn: expires_in,
                             signedRequest: null,
-                            userID: ''
+                            userID: res.id
                         }
                     });
                 });
