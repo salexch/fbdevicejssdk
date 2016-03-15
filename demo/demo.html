@@ -16,8 +16,8 @@
 
             FB.login(function(res) {
                 console.log('Demo login res:' + JSON.stringify(res, null, 4));
-                if (res.status == 'waiting') {
-                    messages.push('waiting: ' + JSON.stringify(res, null, 4));
+                if (res.status == 'pending') {
+                    messages.push('pending: ' + JSON.stringify(res, null, 4));
                 } else if (res.status == 'connected') {
                     messages.push('connected: ' + JSON.stringify(res, null, 4));
                 } else

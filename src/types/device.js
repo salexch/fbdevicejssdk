@@ -16,6 +16,7 @@
         var app_id,
             scope,
             fb_api = {
+                USER_LOGIN: 'https://www.facebook.com/device',
                 DEVICE: 'https://graph.facebook.com/oauth/device?',
                 POLL: 'https://graph.facebook.com/oauth/device?',
                 GRAPH: 'https://graph.facebook.com/v2.3'
@@ -205,11 +206,12 @@
 
                 getLoginCode(app_id, scope).then(function(res) {
                     cb({
-                        status: 'waiting',
-                        user_code: res.user_code
+                        status: 'pending',
+                        authResponse: {
+                            userCode: res.user_code,
+                            loginUrl: fb_api.USER_LOGIN
+                        }
                     });
-
-
 
                     return pollUserLogin(app_id, res.code, res.interval);
                 }).then(function(res) {
