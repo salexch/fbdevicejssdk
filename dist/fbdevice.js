@@ -164,7 +164,7 @@
 	                scope: scope
 	            });
 	
-	            $http.post(fb_api.DEVICE + params).then(function(res) {
+	            $http.post(fb_api.DEVICE + params, null, {responseType : 'json'}).then(function(res) {
 	                console.log('showLoginCode', res);
 	                if (res.status == 200 && 'object' == typeof res.data) //TODO check fields
 	                    dfd.resolve(res.data);
@@ -190,7 +190,7 @@
 	
 	            var poll_timer = setInterval(function() {
 	
-	                $http.post(poll_url).then(function(res) {
+	                $http.post(poll_url, null, {responseType : 'json'}).then(function(res) {
 	                    console.log('showLoginCode', res);
 	                    if (res.status == 200) {
 	                        clearInterval(poll_timer);
@@ -227,7 +227,7 @@
 	            });
 	
 	
-	            return $http.post(fb_api.GRAPH + params);
+	            return $http.post(fb_api.GRAPH + params, null, {responseType : 'json'});
 	        }
 	
 	
