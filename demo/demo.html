@@ -5,14 +5,25 @@
     <title></title>
 </head>
 <body>
+    <ul id="log"></ul>
     <script>
+        var messages = [];
+
         fbAsyncInit = function() {
             FB.init({
                 appId: '885680901553618'
             });
 
             FB.login(function(res) {
-                console.log('Demo login res:', res);
+                console.log('Demo login res:' + JSON.stringify(res, null, 4));
+                if (res.status == 'waiting') {
+                    messages.push('waiting: ' + JSON.stringify(res, null, 4));
+                } else if (res.status == 'connected') {
+                    messages.push('connected: ' + JSON.stringify(res, null, 4));
+                } else
+                    messages.push('other: ' + JSON.stringify(res, null, 4));
+
+                log.innerHTML = '<li>' + messages.join('</li><li>') + '</li>';
             });
         }
     </script>

@@ -281,15 +281,35 @@
 	                options = options || {};
 	                scope = _.compact((options.scope || '').split(','));
 	
+	                var access_token,
+	                    expires_in;
+	
 	                getLoginCode(app_id, scope).then(function(res) {
 	                    cb({
 	                        status: 'waiting',
 	                        user_code: res.user_code
 	                    });
 	
-	                    pollUserLogin(app_id, res.code, res.interval).then(function(res) {
-	                        storeAccessToken(res.access_token);
-	                        cb(res);
+	
+	
+	                    return pollUserLogin(app_id, res.code, res.interval);
+	                }).then(function(res) {
+	                    access_token = res.access_token;
+	                    expires_in = res.expires_in;
+	
+	                    storeAccessToken(access_token);
+	
+	                    return getUserInfo(['name', 'picture'], access_token);
+	                }).then(function(res) {
+	                    console.log('FBSDK Login user data', res);
+	                    cb({
+	                        status: 'connected',
+	                        authResponse: {
+	                            accessToken: access_token,
+	                            expiresIn: expires_in,
+	                            signedRequest: null,
+	                            userID: ''
+	                        }
 	                    });
 	                });
 	
