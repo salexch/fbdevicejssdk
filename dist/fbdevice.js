@@ -224,6 +224,8 @@
 	                });
 	
 	            }, poll_interval);
+	
+	            return dfd.promise;
 	        }
 	
 	        function getUserInfo(fields, access_token) {
