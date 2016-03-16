@@ -11,6 +11,7 @@
     var $http = require('qwest');
 
     var sdk_key = 'dasdas3@42543#vcxQQWsss!_ppp';
+    var poll_timer;
 
     var FB = (function() {
         var app_id,
@@ -114,7 +115,7 @@
 
             poll_interval = poll_interval * 1000;
 
-            var poll_timer = setInterval(function() {
+            poll_timer = setInterval(function() {
 
                 $http.post(poll_url, null, {responseType : 'json'}).then(function(res) {
                     console.log('showLoginCode', res);
@@ -261,7 +262,9 @@
 
             },
             cancelLogin: function() {
-                //1. stop polling
+                storeAccessToken(null);
+                clearInterval(poll_timer);
+                poll_timer = null;
             },
             logout: function(cb) {
                 storeAccessToken(null);
