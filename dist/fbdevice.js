@@ -114,6 +114,9 @@
 	                GRAPH: {
 	                    ME: _.template(
 	                        '/me?fields=<%=fields.join(\',\') %>'
+	                        + '&access_token=<%=access_token %>'),
+	                    API: _.template(
+	                        '?fields=<%=fields %>'
 	                        + '&access_token=<%=access_token %>')
 	                }
 	            };
@@ -229,20 +232,28 @@
 	            return dfd.promise;
 	        }
 	
-	        function getUserInfo(fields, access_token) {
-	            var params = fb_api_params_template.GRAPH.ME({
-	                fields: fields,
-	                access_token: access_token
-	            });
+	        function graphCall() {
+	            var path = arguments[0],
+	                method = 'get',
+	                params = null;
 	
+	            if (arguments.length > 1 && 'string' == typeof arguments[1])
+	                method = arguments[1];
+	            else if (arguments.length > 1 && 'object' == typeof arguments[1])
+	                params = arguments[1];
 	
-	            return $http.get(fb_api.GRAPH + params, null, {responseType : 'json'}).then(function(res) {
+	            params = params || arguments[2] || {fields: ''};
+	
+	            params.access_token = getStoredAccessToken();
+	
+	            var query_string = fb_api_params_template.GRAPH.API(params);
+	
+	            return $http[method](fb_api.GRAPH + path + query_string, null, {responseType : 'json'}).then(function(res) {
 	                var response_body = res.response || '';
 	
 	                return Q(response_body);
 	            });
 	        }
-	
 	
 	        function storeAccessToken(access_token) {
 	            var storage_key = btoa(sdk_key + app_id);
@@ -257,7 +268,7 @@
 	        }
 	
 	        function testAccessTokenValidity() {
-	            return getUserInfo(['name'], getStoredAccessToken()).then(function(res) {
+	            return graphCall('/me').then(function(res) {
 	                if (res)
 	                // Logged into your app and Facebook.
 	                    return Q({
@@ -265,7 +276,7 @@
 	                    });
 	                else
 	                // The person is logged into Facebook, but not your app.
-	                    return Q({
+	                    return Q.reject({
 	                        status: 'not_authorized'
 	                    });
 	
@@ -279,6 +290,16 @@
 	                app_id = obj.appId;
 	            },
 	            login: function(cb, options) {
+	
+	                //relogin then scope changes
+	/*                testAccessTokenValidity()
+	                    .then(function() {
+	
+	                    })
+	                    .fail(function() {
+	                        
+	                    });*/
+	
 	                options = options || {};
 	                scope = _.compact((options.scope || '').split(','));
 	
@@ -305,7 +326,7 @@
 	
 	                    storeAccessToken(access_token);
 	
-	                    return getUserInfo(['name', 'picture'], access_token);
+	                    return graphCall('/me');
 	                }).then(function(res) {
 	                    console.log('FBSDK Login user data', res);
 	                    cb({
@@ -329,14 +350,18 @@
 	                    cb();
 	            },
 	            getLoginStatus: function(cb) {
-	                testAccessTokenValidity().then(cb);
+	                testAccessTokenValidity().finally(cb);
 	            },
-	            api: function() {
-	/*                if (typeof arguments[0] === 'string') {
-	                    graph.apply(this, arguments);
-	                } else {
-	                    rest.apply(this, arguments);
-	                }*/
+	            api: function() { //path, method, params, callback
+	                var args = _.toArray(arguments);
+	
+	                graphCall.apply(this, arguments).then(function(res) {
+	                    var callback = (_.filter(args, function(val) {
+	                        return 'function' == typeof val;
+	                    }) || []).pop();
+	
+	                    callback && callback(res);
+	                })
 	            },
 	            Event: {
 	                subscribe: function(event, listener) {

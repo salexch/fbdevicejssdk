@@ -18,6 +18,12 @@
                 console.log('Demo login res', res);
                 messages.push(res.status + ': ' + JSON.stringify(res, null, 4));
                 log.innerHTML = '<li>' + messages.join('</li><li>') + '</li>';
+
+                FB.api('/me', {fields: 'name,picture'}, function(res) {
+                    console.log('Demo login res', res);
+                    messages.push(res.status + ': ' + JSON.stringify(res, null, 4));
+                    log.innerHTML = '<li>' + messages.join('</li><li>')
+                });
             });
         }
     </script>
