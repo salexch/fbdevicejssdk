@@ -205,6 +205,7 @@
 	
 	                    if (response_status == 200) {
 	                        clearInterval(poll_timer);
+	                        poll_timer = null;
 	                        dfd.resolve(response_body);
 	                    } else if (response_status == 400) {
 	                        var error_type,
@@ -218,10 +219,12 @@
 	                            switch (error_message) {
 	                                case 'authorization_declined':
 	                                    clearInterval(poll_timer);
+	                                    poll_timer = null;
 	                                    dfd.reject(error_message);
 	                                    break;
 	                                case 'code_expired':
 	                                    clearInterval(poll_timer);
+	                                    poll_timer = null;
 	                                    dfd.reject(error_message);
 	                                    break;
 	                            }
@@ -343,9 +346,12 @@
 	
 	            },
 	            cancelLogin: function() {
+	                var canceled = !!poll_timer;
 	                storeAccessToken(null);
 	                clearInterval(poll_timer);
 	                poll_timer = null;
+	
+	                return canceled;
 	            },
 	            logout: function(cb) {
 	                storeAccessToken(null);
