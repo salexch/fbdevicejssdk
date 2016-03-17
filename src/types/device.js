@@ -32,53 +32,11 @@
                     + '&client_id=<%=APP_ID %>'
                     + '&code=<%=code %>'),
                 GRAPH: {
-                    ME: _.template(
-                        '/me?fields=<%=fields.join(\',\') %>'
-                        + '&access_token=<%=access_token %>'),
                     API: _.template(
                         '?fields=<%=fields %>'
                         + '&access_token=<%=access_token %>')
                 }
             };
-
-/*        var graph = function () {
-            var   args = Array.prototype.slice.call(arguments)
-                , path = args.shift()
-                , next = args.shift()
-                , method
-                , params
-                , cb;
-
-            while (next) {
-                var type = typeof next;
-                if (type === 'string' && !method) {
-                    method = next.toLowerCase();
-                } else if (type === 'function' && !cb) {
-                    cb = next;
-                } else if (type === 'object' && !params) {
-                    params = next;
-                } else {
-                    log('Invalid argument passed to FB.api(): ' + next);
-                    return;
-                }
-                next = args.shift();
-            };
-
-            method = method || 'get';
-            params = params || {};
-
-            // remove prefix slash if one is given, as it's already in the base url
-            if (path[0] === '/') {
-                path = path.substr(1);
-            }
-
-            if (METHODS.indexOf(method) < 0) {
-                log('Invalid method passed to FB.api(): ' + method);
-                return;
-            }
-
-            oauthRequest('graph', path, method, params, cb);
-        };*/
 
         function getLoginCode(app_id, scope) {
             var dfd = Q.defer();
@@ -213,16 +171,6 @@
                 app_id = obj.appId;
             },
             login: function(cb, options) {
-
-                //relogin then scope changes
-/*                testAccessTokenValidity()
-                    .then(function() {
-
-                    })
-                    .fail(function() {
-
-                    });*/
-
                 options = options || {};
                 scope = _.compact((options.scope || '').split(','));
 
@@ -283,13 +231,11 @@
             api: function() { //path, method, params, callback
                 var args = _.toArray(arguments);
 
-                graphCall.apply(this, arguments).then(function(res) {
-                    var callback = (_.filter(args, function(val) {
-                        return 'function' == typeof val;
-                    }) || []).pop();
+                var callback = (_.filter(args, function(val) {
+                    return 'function' == typeof val;
+                }) || []).pop() || function() {};
 
-                    callback && callback(res);
-                })
+                graphCall.apply(this, arguments).always(callback);
             },
             Event: {
                 subscribe: function(event, listener) {

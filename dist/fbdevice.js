@@ -113,53 +113,11 @@
 	                    + '&client_id=<%=APP_ID %>'
 	                    + '&code=<%=code %>'),
 	                GRAPH: {
-	                    ME: _.template(
-	                        '/me?fields=<%=fields.join(\',\') %>'
-	                        + '&access_token=<%=access_token %>'),
 	                    API: _.template(
 	                        '?fields=<%=fields %>'
 	                        + '&access_token=<%=access_token %>')
 	                }
 	            };
-	
-	/*        var graph = function () {
-	            var   args = Array.prototype.slice.call(arguments)
-	                , path = args.shift()
-	                , next = args.shift()
-	                , method
-	                , params
-	                , cb;
-	
-	            while (next) {
-	                var type = typeof next;
-	                if (type === 'string' && !method) {
-	                    method = next.toLowerCase();
-	                } else if (type === 'function' && !cb) {
-	                    cb = next;
-	                } else if (type === 'object' && !params) {
-	                    params = next;
-	                } else {
-	                    log('Invalid argument passed to FB.api(): ' + next);
-	                    return;
-	                }
-	                next = args.shift();
-	            };
-	
-	            method = method || 'get';
-	            params = params || {};
-	
-	            // remove prefix slash if one is given, as it's already in the base url
-	            if (path[0] === '/') {
-	                path = path.substr(1);
-	            }
-	
-	            if (METHODS.indexOf(method) < 0) {
-	                log('Invalid method passed to FB.api(): ' + method);
-	                return;
-	            }
-	
-	            oauthRequest('graph', path, method, params, cb);
-	        };*/
 	
 	        function getLoginCode(app_id, scope) {
 	            var dfd = Q.defer();
@@ -294,16 +252,6 @@
 	                app_id = obj.appId;
 	            },
 	            login: function(cb, options) {
-	
-	                //relogin then scope changes
-	/*                testAccessTokenValidity()
-	                    .then(function() {
-	
-	                    })
-	                    .fail(function() {
-	
-	                    });*/
-	
 	                options = options || {};
 	                scope = _.compact((options.scope || '').split(','));
 	
@@ -364,13 +312,11 @@
 	            api: function() { //path, method, params, callback
 	                var args = _.toArray(arguments);
 	
-	                graphCall.apply(this, arguments).then(function(res) {
-	                    var callback = (_.filter(args, function(val) {
-	                        return 'function' == typeof val;
-	                    }) || []).pop();
+	                var callback = (_.filter(args, function(val) {
+	                    return 'function' == typeof val;
+	                }) || []).pop() || function() {};
 	
-	                    callback && callback(res);
-	                })
+	                graphCall.apply(this, arguments).always(callback);
 	            },
 	            Event: {
 	                subscribe: function(event, listener) {
@@ -17718,13 +17664,14 @@
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/*! qwest 4.1.1 (https://github.com/pyrsmk/qwest) */
+	/*! qwest 4.2.1 (https://github.com/pyrsmk/qwest) */
 	
 	module.exports = function() {
 	
 		var global = window || this,
 			pinkyswear = __webpack_require__(8),
 			jparam = __webpack_require__(9),
+			defaultOptions = {},
 			// Default response type for XDR in auto mode
 			defaultXdrResponseType = 'json',
 			// Default data type
@@ -17748,6 +17695,18 @@
 			method = method.toUpperCase();
 			data = data || null;
 			options = options || {};
+			for(var name in defaultOptions) {
+				if(!(name in options)) {
+					if(typeof defaultOptions[name] == 'object' && typeof options[name] == 'object') {
+						for(var name2 in defaultOptions[name]) {
+							options[name][name2] = defaultOptions[name][name2];
+						}
+					}
+					else {
+						options[name] = defaultOptions[name];
+					}
+				}
+			}
 	
 			// Define variables
 			var nativeResponseParsing = false,
@@ -17762,7 +17721,8 @@
 					text: '*/*',
 					xml: 'text/xml',
 					json: 'application/json',
-					post: 'application/x-www-form-urlencoded'
+					post: 'application/x-www-form-urlencoded',
+					document: 'text/html'
 				},
 				accept = {
 					text: '*/*',
@@ -17829,10 +17789,10 @@
 						}
 					}
 					// Verify if the response type is supported by the current browser
-					if(xhr2 && options.responseType != 'document' && options.responseType!='auto') { // Don't verify for 'document' since we're using an internal routine
+					if(xhr2 && options.responseType!='auto') {
 						try {
 							xhr.responseType = options.responseType;
-							nativeResponseParsing = (xhr.responseType==options.responseType);
+							nativeResponseParsing = (xhr.responseType == options.responseType);
 						}
 						catch(e){}
 					}
@@ -17900,16 +17860,6 @@
 					// Process response
 					if(nativeResponseParsing && 'response' in xhr && xhr.response!==null) {
 						response = xhr.response;
-					}
-					else if(options.responseType == 'document') {
-						var frame = document.createElement('iframe');
-						frame.style.display = 'none';
-						document.body.appendChild(frame);
-						frame.contentDocument.open();
-						frame.contentDocument.write(xhr.response);
-						frame.contentDocument.close();
-						response = frame.contentDocument;
-						document.body.removeChild(frame);
 					}
 					else{
 						// Guess response type
@@ -18021,12 +17971,14 @@
 			else if('FormData' in global && data instanceof FormData) {
 				options.dataType = 'formdata';
 			}
-			switch(options.dataType) {
-				case 'json':
-					data = (data !== null ? JSON.stringify(data) : data);
-					break;
-				case 'post':
-					data = jparam(data);
+			if(data !== null) {
+				switch(options.dataType) {
+					case 'json':
+						data = JSON.stringify(data);
+						break;
+					case 'post':
+						data = jparam(data);
+				}
 			}
 	
 			// Prepare headers
@@ -18079,20 +18031,22 @@
 				// Create a new promise to handle all requests
 				return pinkyswear(function(pinky) {
 					// Basic request method
-					var createMethod = function(method) {
-						return function(url, data, options, before) {
-							++loading;
-							promises.push(qwest(method, pinky.base + url, data, options, before).then(function(xhr, response) {
-								values.push(arguments);
-								if(!--loading) {
-									pinky(true, values.length == 1 ? values[0] : [values]);
-								}
-							}, function() {
-								pinky(false, arguments);
-							}));
-							return pinky;
+					var method_index = -1,
+						createMethod = function(method) {
+							return function(url, data, options, before) {
+								var index = ++method_index;
+								++loading;
+								promises.push(qwest(method, pinky.base + url, data, options, before).then(function(xhr, response) {
+									values[index] = arguments;
+									if(!--loading) {
+										pinky(true, values.length == 1 ? values[0] : [values]);
+									}
+								}, function() {
+									pinky(false, arguments);
+								}));
+								return pinky;
+							};
 						};
-					};
 					// Define external API
 					pinky.get = createMethod('GET');
 					pinky.post = createMethod('POST');
@@ -18104,11 +18058,13 @@
 					pinky.map = function(type, url, data, options, before) {
 						return createMethod(type.toUpperCase()).call(this, url, data, options, before);
 					};
+					// Populate methods from external object
 					for(var prop in q) {
 						if(!(prop in pinky)) {
 							pinky[prop] = q[prop];
 						}
 					}
+					// Set last methods
 					pinky.send = function() {
 						for(var i=0, j=promises.length; i<j; ++i) {
 							promises[i].send();
@@ -18144,6 +18100,10 @@
 				xhr2: xhr2,
 				limit: function(by) {
 					limit = by;
+					return q;
+				},
+				setDefaultOptions: function(options) {
+					defaultOptions = options;
 					return q;
 				},
 				setDefaultXdrResponseType: function(type) {
