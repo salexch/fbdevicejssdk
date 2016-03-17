@@ -214,11 +214,15 @@
             },
             cancelLogin: function() {
                 var canceled = !!poll_timer;
+
+                if (!canceled)
+                    return false;
+
                 storeAccessToken(null);
                 clearInterval(poll_timer);
                 poll_timer = null;
 
-                return canceled;
+                return true;
             },
             logout: function(cb) {
                 storeAccessToken(null);
