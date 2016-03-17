@@ -316,7 +316,7 @@
 	                    return 'function' == typeof val;
 	                }) || []).pop() || function() {};
 	
-	                graphCall.apply(this, arguments).always(callback);
+	                graphCall.apply(this, arguments).finally(callback);
 	            },
 	            Event: {
 	                subscribe: function(event, listener) {
