@@ -127,12 +127,7 @@
 	                scope: scope
 	            });
 	
-	            $http.post(fb_api.DEVICE + params, null, {
-	                responseType : 'json',
-	                headers: {
-	                    Accept: '*'
-	                }
-	            }).then(function(res) {
+	            $http.post(fb_api.DEVICE + params, null, {responseType : 'json'}).then(function(res) {
 	                console.log('showLoginCode', res);
 	                var response_body = res.response || '',
 	                    response_status = ~~(res.status || -1);
