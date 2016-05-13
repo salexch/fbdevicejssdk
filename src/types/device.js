@@ -10,7 +10,7 @@
     var Q = require('q');
     var $http = require('qwest');
 
-    var sdk_key = 'dasdas3@42543#vcxQQWsss!_ppp';
+    var sdk_key = btoa(location.href + 'dasdas3@42543#vcxQQWsss!_ppp');
     var poll_timer;
 
     var FB = (function() {
