@@ -51,6 +51,12 @@
                 var response_body = res.response || '',
                     response_status = ~~(res.status || -1);
 
+                if (response_body > '' && 'object' !== typeof response_body) {
+                    try {
+                        response_body = JSON.parse(response_body);
+                    } catch (e) {}
+                }
+
                 if (response_status == 200 && 'object' == typeof response_body) //TODO check fields
                     dfd.resolve(response_body);
                 else
@@ -79,6 +85,12 @@
                     console.log('showLoginCode', res);
                     var response_body = res.response || '',
                         response_status = ~~(res.status || -1);
+
+                    if (response_body > '' && 'object' !== typeof response_body) {
+                        try {
+                            response_body = JSON.parse(response_body);
+                        } catch (e) {}
+                    }
 
                     if (response_status == 200) {
                         clearInterval(poll_timer);
@@ -186,11 +198,7 @@
                         }
                     });
 
-                    return pollUserLogin(app_id, res.code, res.interval).fail(function(message) {
-                        cb({
-                            status: message == 'authorization_declined' ? 'not_authorized' : 'unknown'
-                        });
-                    });
+                    return pollUserLogin(app_id, res.code, res.interval);
                 }).then(function(res) {
                     access_token = res.access_token;
                     expires_in = res.expires_in;
@@ -208,6 +216,10 @@
                             signedRequest: null,
                             userID: res.id
                         }
+                    });
+                }).fail(function(message) {
+                    cb({
+                        status: message == 'authorization_declined' ? 'not_authorized' : 'unknown'
                     });
                 });
 
