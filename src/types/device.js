@@ -51,7 +51,7 @@
                 var response_body = res.response || '',
                     response_status = ~~(res.status || -1);
 
-                if (response_body > '' && 'object' !== typeof response_body) {
+                if ('object' !== typeof response_body) {
                     try {
                         response_body = JSON.parse(response_body);
                     } catch (e) {}
@@ -86,7 +86,7 @@
                     var response_body = res.response || '',
                         response_status = ~~(res.status || -1);
 
-                    if (response_body > '' && 'object' !== typeof response_body) {
+                    if ('object' !== typeof response_body) {
                         try {
                             response_body = JSON.parse(response_body);
                         } catch (e) {}
@@ -143,6 +143,11 @@
 
             return $http[method](fb_api.GRAPH + path + query_string, null, {responseType : 'json'}).then(function(res) {
                 var response_body = res.response || '';
+
+                if ('object' !== typeof response_body)
+                    try {
+                        response_body = JSON.parse(response_body);
+                    } catch (e) {}
 
                 return Q(response_body);
             });
